@@ -10,6 +10,8 @@
 #define SOCKMAN_H
 
 #define MAXROUTERS 25 // max number of routers
+#define NBR 0;  // flag to indicate neighbouring router
+#define INCMG 1 // flag to indicate incoming router
 
 /*
  * Initializes all necessary variables for socket
@@ -24,17 +26,24 @@
 int sockman_init(void);
 
 /*
- * Logs a newly created socket in the array of active
- * sockets. If, for some reason, the new socket is already
- * in the array, will indicate failure.
+ * Logs newly created socket in list of sockets that
+ * carry outgoing info to neighbouring routers, or
+ * in the list of socket used to receive info from
+ * other routers.
  *
  * Input:
  * int sockfd: socket file descriptor
+ * int flag: NBR to indicate we are reconnecting to a
+ *           neighbouring socket
+ *
+ *           INCMG to indicate we are getting a connection
+ *           from another router looking to send us 
+ *           information
  *
  * Output:
  * 0 on success, -1 on failure
  */
-int log_socket(int sockfd);
+int log_socket(int sockfd, int flag);
 
 /*
  * Removes and closes all inactive sockets in the
