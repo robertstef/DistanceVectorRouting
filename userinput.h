@@ -1,15 +1,13 @@
 /*
- * Checks if the input string is a valid IPv4
- * or IPv6 address.
- *
- * Input:
- * char *ip_addr: a string representing an IPv4 
- *                or IPv6 address
- * 
- * Output:
- * 0 on success, -1 on failure
+ * Robert Stefanyhin
+ * ras867
+ * 11137532
+ * CMPT434
+ * A3
  */ 
-int valid_IP(char *ip_addr);
+
+#ifndef USERIN_H
+#define USERIN_H
 
 /*
  * Checks if the input string is a valid port
@@ -24,29 +22,27 @@ int valid_IP(char *ip_addr);
 int valid_port(char *port);
 
 /*
- * Checks if the input string is an
- * integer greater than 0.
+ * Checks if the input string is a single
+ * capital letter from A-Z
  *
  * Input:
- * char *uint: a string representing an integer
- *           
+ * char *name: name of router
+ *
  * Output:
  * 0 on success, -1 on failure
- */ 
-int valid_uint(char *uint);
+ */
+int valid_name(char *name);
 
 /*
- * For use by the sender application.
  * Checks if the command line arguments
  * are of the following form:
  *
- * sender ip port maxwindow timeout
+ * router name myport theirport1 ...
  *
  * Where:
- * ip is an IPv4 or IPv6 address
- * port is an integer in range 30000 - 40000
- * maxwindow is an integer greater than 0
- * timeout is an integer greater than 0
+ * name is a single uppcase ascii character
+ * myport is an integer in range 30000-40000
+ * theirport 1..n is an integer in range 30000-40000
  *
  * Input:
  * int count: argument count
@@ -56,3 +52,5 @@ int valid_uint(char *uint);
  * 0 on success, -1 on failure
  */ 
 int checkinput(int count, char *args[]);
+
+#endif // USERIN_H
