@@ -46,8 +46,8 @@ int checkinput(int count, char *args[])
 {
     int rv;
     
-    // count must be >= 4
-    if ( count < 4 )
+    // count must be: 3 < count < 6
+    if ( count < 4 || count > 5 )
         return -1;
 
     // NAME
