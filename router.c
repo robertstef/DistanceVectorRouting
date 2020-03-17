@@ -16,6 +16,7 @@
 #include "socketsetup.h"
 #include "routerfcns.h"
 #include "socketmanage.h"
+#include "routertable.h"
 
 #define BACKLOG 10  // max number connection requests
 #define MAXARG 5   // max allowable cmd line args
@@ -42,6 +43,14 @@ int main(int argc, char *argv[])
 
     // try and connect to neighbouring routers
     connect_nbrs();
+
+    // initialize router table
+    if ((rv = rtable_init(*argv[1])) == -1)
+        exit(EXIT_FAILURE);
+
+    print_rtable();
+    
+    exit(EXIT_SUCCESS);
 
     // setup passive socket
     memset(&hints, 0, sizeof(hints));

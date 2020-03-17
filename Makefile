@@ -6,7 +6,7 @@
 
 CC = gcc -Wall -Wextra -Wpedantic
 ROUTER = userinput.o router.o socketsetup.o routerfcns.o socketmanage.o \
-		 list.o
+		 list.o routertable.o
 
 .PHONY: all
 all: router
@@ -19,6 +19,9 @@ router.o: router.c userinput.h
 
 routerfcns.o: routerfcns.h routerfcns.c
 	$(CC) -g -c routerfcns.c -o routerfcns.o
+
+routertable.o: routertable.h routertable.c
+	$(CC) -g -c routertable.c -o routertable.o
 
 socketmanage.o: socketmanage.h list.h socketmanage.c
 	$(CC) -g -c socketmanage.c -o socketmanage.o

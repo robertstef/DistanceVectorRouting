@@ -31,9 +31,7 @@ typedef struct nbr_info
 NBR_INFO *neighbours; // sockets to communicate with neighbours
 int num_nbrs;    // number of neighbouring routers
 
-//LIST *sockets; // active sockets we are receiving from
 POLLINFO pollinfo;
-//struct pollfd pollfds[MAXROUTERS];
 int nxt_avail;
 
 char hostname[MAXBUF]; // hostname of local machine
@@ -100,36 +98,6 @@ POLLINFO *log_socket(int sockfd)
                 "buffer is full\n");
 
     return &pollinfo;
-    /*
-    int *sockptr, rv;
-    
-    // make sure we have room for new connection
-    if (size(sockets) > MAXROUTERS)
-    {
-        fprintf(stderr, "log_socket(): cannot accomodate new connection," 
-                "buffer is full\n");
-        return -1;
-    }
-
-    // store the new sockfd
-    if ((sockptr = malloc(sizeof(int))) == NULL)
-    {
-        printf("log_socket(): malloc error\n");
-        return -1;
-    }
-
-    *sockptr = sockfd;
-
-    // add to list sock incoming sockets
-    if ((rv = append(sockets, sockptr)) == -1)
-    {
-        free(sockptr);
-        sockptr = 0;
-        return -1;
-    }
-
-    return 0;
-    */
 }
 
 void connect_nbrs(void)
