@@ -9,9 +9,15 @@
 #ifndef SOCKMAN_H
 #define SOCKMAN_H
 
-#define MAXROUTERS 25 // max number of routers
-#define NBR 0;  // flag to indicate neighbouring router
-#define INCMG 1 // flag to indicate incoming router
+#include <poll.h>
+
+#define MAXROUTERS 26
+
+typedef struct poll_info
+{
+    int fdcount;
+    struct pollfd pfds[MAXROUTERS];
+} POLLINFO;
 
 /*
  * Initializes all necessary variables for socket
@@ -28,15 +34,18 @@ int sockman_init(int argc, char *argv[]);
 
 /*
  * Logs newly created socket in list of sockets that
- * receive incoming information from routers.
+ * receive incoming information from routers and returns
+ * the updated array of pollfds. If there is no room
+ * for a new socket, a pointer to the unchaged array will
+ * be printed and a message will be printed to stderr.
  *
  * Input:
  * int sockfd: socket file descriptor
  *
  * Output:
- * 0 on success, -1 on failure
+ * POLLINFO with updated polling info
  */
-int log_socket(int sockfd);
+POLLINFO *log_socket(int sockfd);
 
 /*
  * Attempts to establish or re-establish a conneciton

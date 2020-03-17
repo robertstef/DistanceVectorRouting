@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stddef.h>
+#include <poll.h>
 #include "userinput.h"
 #include "socketsetup.h"
 #include "routerfcns.h"
@@ -21,10 +22,12 @@
 
 int main(int argc, char *argv[])
 {
-    int rv, sockfd, newfd;
+    int rv, pollrv, sockfd, newfd;
     struct addrinfo hints;
     struct sockaddr their_addr;
     socklen_t addr_len;
+    POLLINFO *pollinfo;
+    int LISTENER;
 
     // verify command line input
     if ( (rv = checkinput(argc, argv)) == -1)
@@ -48,37 +51,65 @@ int main(int argc, char *argv[])
 
     if ( (sockfd = set_passive_tcp(&hints, argv[2])) == -1 )
         exit(EXIT_FAILURE);
-   
+    
+    // record the listening socket
+    LISTENER = sockfd;
+    pollinfo = log_socket(sockfd);
+
     // listen for incoming connections
     if (listen(sockfd, BACKLOG) == -1)
     {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    // we got a connection - connect!
-    else
-    {
-        addr_len = sizeof(their_addr);
-        newfd = accept(sockfd, &their_addr, &addr_len);
 
-        if ( newfd == -1 )
+    while (1)
+    {
+        pollrv = poll(pollinfo->pfds, pollinfo->fdcount, 2000);
+
+        // poll failed
+        if ( pollrv == -1 )
         {
-            perror("accept");
+            fprintf(stderr, "poll(): poll failed - exiting program\n");
             exit(EXIT_FAILURE);
         }
+        
+        // timeout occurred
+        if ( pollrv == 0 )
+        {
+            fprintf(stdout, "Printing router table\n");
+        }
 
-        if ((rv = log_socket(newfd)) == -1)
-                exit(EXIT_FAILURE);
+        for (int i = 0; i < pollinfo->fdcount; i++)
+        {
+            if ( pollinfo->pfds[i].revents & POLLIN )
+            {
+                // listening socket
+                if (pollinfo->pfds[i].fd == LISTENER)
+                {
+                    // accept new connection
+                    addr_len = sizeof(their_addr);
+                    newfd = accept(sockfd, &their_addr, &addr_len);
 
-        printf("Got connection with sockfd %d\n", newfd);
+                    if ( newfd == -1 )
+                    {
+                        perror("accept");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    // log new connection
+                    pollinfo = log_socket(newfd);
+
+                    printf("Got connection with sockfd %d\n", newfd);
+                }
+                // incoming router table
+                else
+                {
+                    printf("Updating router table\n");
+                }
+            }
+        }
     }
-
-
-    // create array of poll fds
-    //
-    // poll open sockets for activity:
-    //      if listening socket -> create new connections
-    //      if incoming table, update table accordingly
 
     return 0;
 }

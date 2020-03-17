@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
 #include "list.h"
 #include "socketmanage.h"
 #include "socketsetup.h"
@@ -29,7 +31,10 @@ typedef struct nbr_info
 NBR_INFO *neighbours; // sockets to communicate with neighbours
 int num_nbrs;    // number of neighbouring routers
 
-LIST *sockets; // active sockets we are receiving from
+//LIST *sockets; // active sockets we are receiving from
+POLLINFO pollinfo;
+//struct pollfd pollfds[MAXROUTERS];
+int nxt_avail;
 
 char hostname[MAXBUF]; // hostname of local machine
 
@@ -61,10 +66,6 @@ int sockman_init(int argc, char *argv[])
         strcpy(neighbours[i].port, argv[i + 3]);
     }
 
-    sockets = listCreate();
-    if (sockets == NULL)
-        return -1;
-
     // get hostname of local machine
     memset(hostname, 0, MAXBUF);
     if ((rv = gethostname(hostname, MAXBUF)) == -1)
@@ -77,8 +78,29 @@ int sockman_init(int argc, char *argv[])
     return 0;
 }
 
-int log_socket(int sockfd)
+POLLINFO *log_socket(int sockfd)
 {
+    int rv;
+
+    if (nxt_avail < MAXROUTERS)
+    {
+        // set socket to non-blocking
+        if ((rv = fcntl(sockfd, F_SETFL, O_NONBLOCK)) < 0)
+            fprintf(stderr, "log_socket(): fcntl error, could not set "
+                    "socket to non-blocking\n");
+
+        pollinfo.pfds[nxt_avail].fd = sockfd;
+        pollinfo.pfds[nxt_avail].events = POLLIN;
+        pollinfo.fdcount++;
+
+        nxt_avail++;
+    }
+    else
+        fprintf(stderr, "log_socket(): cannot accomodate new connection - "
+                "buffer is full\n");
+
+    return &pollinfo;
+    /*
     int *sockptr, rv;
     
     // make sure we have room for new connection
@@ -107,6 +129,7 @@ int log_socket(int sockfd)
     }
 
     return 0;
+    */
 }
 
 void connect_nbrs(void)
@@ -140,7 +163,3 @@ void connect_nbrs(void)
     }
 }
 
-int remove_inactive(void)
-{
-    return 0;
-}
