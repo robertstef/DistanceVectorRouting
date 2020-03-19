@@ -79,12 +79,12 @@ int set_active_tcp(struct addrinfo *hints, char *port, char *name)
 	for(p = servinfo; p != NULL; p = p->ai_next) {
 		if ((sockfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
-			perror("set_active_tcp(): socket");
+			//perror("set_active_tcp(): socket");
 			continue;
 		}
 
 		if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-			perror("set_active_tcp(): connect");
+			//perror("set_active_tcp(): connect");
 			close(sockfd);
 			continue;
 		}
@@ -93,7 +93,7 @@ int set_active_tcp(struct addrinfo *hints, char *port, char *name)
 	}
 
 	if (p == NULL) {
-		fprintf(stderr, "set_active_tcp(): failed to connect\n");
+		//fprintf(stderr, "set_active_tcp(): failed to connect\n");
 		return -1;
 	}
 

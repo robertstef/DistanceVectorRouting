@@ -16,23 +16,17 @@
 #include "list.h"
 #include "socketmanage.h"
 #include "socketsetup.h"
+#include "routertable.h"
 
 #define MAXARGS 5 // max number of cmdline arguments
-#define PORTSZ 5  // a port number must have 5 digits
 #define MAXBUF 100 // max buffer size
 
-/* Info for neighbouring routers */
-typedef struct nbr_info
-{
-    int sockfd;
-    char port[PORTSZ];
-} NBR_INFO;
 
 NBR_INFO *neighbours; // sockets to communicate with neighbours
 int num_nbrs;    // number of neighbouring routers
 
-POLLINFO pollinfo;
-int nxt_avail;
+POLLINFO pollinfo; // array of incoming sockets we are polling
+int nxt_avail; // next open spot in pollinfo
 
 char hostname[MAXBUF]; // hostname of local machine
 
@@ -59,7 +53,7 @@ int sockman_init(int argc, char *argv[])
         neighbours[i].sockfd = 0;
 
         // use idx argv[i+3] bc we need to access
-        // the 4nd and maybe 5th index of argv
+        // the 4th and maybe 5th index of argv
         // depending how many neighbours we have
         strcpy(neighbours[i].port, argv[i + 3]);
     }
@@ -118,14 +112,27 @@ void connect_nbrs(void)
         if (nbr.sockfd == 0)
         {
             newfd = set_active_tcp(&hints, nbr.port, hostname);
-            if (newfd == -1)
-                fprintf(stderr, "connect_nbrs(): unable to create "
-                        "TCP connections with router listening on port"
-                        " %s\n", nbr.port);
 
+            // neighbor not available
+            if (newfd == -1)
+                fprintf(stderr, "Unable to connect with router listening "
+                        "on port %s\n\n", nbr.port);
+            // got connection
+            else
+            {
+                nbr.sockfd = newfd;
+
+                // wait for neighbor to send us their router name
+                rv = recv_tcp(&nbr.name, nbr.sockfd, sizeof(char));
+                if (rv == -1)
+                    break;
+
+                add_neighbour(nbr.name);
+                printf("Connected to router %c\n", nbr.name);
+            }
         }
         // else check conection status - reconnect if necessary
-        else{ 
+        else { 
             // do stuff 
         }
     }

@@ -14,18 +14,19 @@
 #define S_ALPH 65 // ascii code for A
 #define INF 2147483647 // value for infinity
 
-ROUTER_T rtable; // router table for this router
+RTABLE rtable; // router table for this router
 
-int rtable_init(char n)
+int init_rtable(char n)
 {
     rtable.my_name = n;
-    
-    // fill dist with INF
-    // fill next_hop with '-'
-    // fill name column with A-Z
+
     for (int i = 0; i < MAXROUTERS; i++)
     {
-        rtable.dist[i] = INF;
+        // set our distance to 0
+        if ((i + S_ALPH) == n)
+            rtable.dist[i] = 0;
+        else
+            rtable.dist[i] = INF;
         rtable.next_hop[i] = '-';
         rtable.names[i] = i + S_ALPH; 
     }
@@ -34,16 +35,36 @@ int rtable_init(char n)
 
 void print_rtable(void)
 {
-    printf("| Name | D%c(y) | Next_hop%c(y) |\n", 
+    printf("| Name | D_%c(y) | Next_hop_%c(y) |\n", 
             rtable.my_name, rtable.my_name);
     printf("---------------------------------\n");
     for (int i = 0; i < MAXROUTERS; i++)
     {
-        if (rtable.dist[i] == INF)
-            printf("| %c    | INF   | %c            |\n", rtable.names[i], 
-                    rtable.next_hop[i]);
-        else
-            printf("| %c   | %d    | %c            |\n", rtable.names[i], 
+        // assume if distance is INF we don't know about the router
+        if (rtable.dist[i] != INF)
+            printf("| %c    | %d      | %c             |\n", rtable.names[i], 
                 rtable.dist[i], rtable.next_hop[i]);
+    }
+    printf("\n\n");
+}
+
+int update_rtable(RTABLE new_table)
+{
+    (void) new_table;
+    return 0; 
+}
+
+void add_neighbour(char name)
+{
+    // find neighbour in router table
+    for (int i = 0; i < MAXROUTERS; i++)
+    {
+        if (rtable.names[i] == name)
+        {
+            rtable.names[i] = name;
+            rtable.dist[i] = 1;
+            rtable.next_hop[i] = name;
+            break;
+        }
     }
 }

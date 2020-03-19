@@ -23,7 +23,7 @@
 
 int main(int argc, char *argv[])
 {
-    int rv, pollrv, sockfd, newfd;
+    int rv, pollrv, sockfd, newfd, tout;
     struct addrinfo hints;
     struct sockaddr their_addr;
     socklen_t addr_len;
@@ -41,16 +41,12 @@ int main(int argc, char *argv[])
     if ((rv = sockman_init(argc, argv)) == -1)
         exit(EXIT_FAILURE);
 
+    // initialize router table
+    if ((rv = init_rtable(*argv[1])) == -1)
+        exit(EXIT_FAILURE);
+    
     // try and connect to neighbouring routers
     connect_nbrs();
-
-    // initialize router table
-    if ((rv = rtable_init(*argv[1])) == -1)
-        exit(EXIT_FAILURE);
-
-    print_rtable();
-    
-    exit(EXIT_SUCCESS);
 
     // setup passive socket
     memset(&hints, 0, sizeof(hints));
@@ -72,9 +68,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    tout = 5000;
     while (1)
     {
-        pollrv = poll(pollinfo->pfds, pollinfo->fdcount, 2000);
+        pollrv = poll(pollinfo->pfds, pollinfo->fdcount, tout);
 
         // poll failed
         if ( pollrv == -1 )
@@ -86,7 +83,8 @@ int main(int argc, char *argv[])
         // timeout occurred
         if ( pollrv == 0 )
         {
-            fprintf(stdout, "Printing router table\n");
+            print_rtable();
+            tout = 5000;
         }
 
         for (int i = 0; i < pollinfo->fdcount; i++)
@@ -109,12 +107,18 @@ int main(int argc, char *argv[])
                     // log new connection
                     pollinfo = log_socket(newfd);
 
-                    printf("Got connection with sockfd %d\n", newfd);
+                    // send router name to new connection
+                    rv = send_tcp(argv[1], newfd, sizeof(char));
+                    if (rv == -1)
+                        break;
+
+                    printf("Got connection on sockfd %d\n", newfd);
                 }
                 // incoming router table
                 else
                 {
                     printf("Updating router table\n");
+                    tout = 0;
                 }
             }
         }

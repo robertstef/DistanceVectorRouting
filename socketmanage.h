@@ -11,13 +11,28 @@
 
 #include <poll.h>
 
-#define MAXROUTERS 26
+#define MAXROUTERS 26 // max routers we can connect
+#define PORTSZ 5  // a port number must have 5 digits
 
+/* struct to hold all polling information */
 typedef struct poll_info
 {
     int fdcount;
     struct pollfd pfds[MAXROUTERS];
 } POLLINFO;
+
+/* Info for neighbouring routers */
+typedef struct nbr_info
+{
+    char name; // name of neighboring router
+    int sockfd; // sockfd of neighbor
+    char port[PORTSZ]; // port neighbor is listening on
+} NBR_INFO;
+
+// so router table can have access to
+// info about neighboring routers
+extern NBR_INFO *neighbours;
+extern int num_nbrs;
 
 /*
  * Initializes all necessary variables for socket
