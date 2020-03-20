@@ -14,8 +14,10 @@ all: router
 router: $(ROUTER)
 	$(CC) -g $(ROUTER) -o router
 
-router.o: router.c userinput.h
-	$(CC) -g -c router.c -o router.o
+#router.o: router.c userinput.h
+#	$(CC) -g -c router.c -o router.o
+router.o: router_redo.c
+	$(CC) -g -c  router_redo.c -o router.o
 
 routerfcns.o: routerfcns.h routerfcns.c
 	$(CC) -g -c routerfcns.c -o routerfcns.o
@@ -23,8 +25,10 @@ routerfcns.o: routerfcns.h routerfcns.c
 routertable.o: routertable.h routertable.c
 	$(CC) -g -c routertable.c -o routertable.o
 
-socketmanage.o: socketmanage.h list.h socketmanage.c
-	$(CC) -g -c socketmanage.c -o socketmanage.o
+#socketmanage.o: socketmanage.h list.h socketmanage.c
+	#$(CC) -g -c socketmanage.c -o socketmanage.o
+socketmanage.o: sman_redo.h sman_redo.c list.h socketsetup.h
+	$(CC) -g -c sman_redo.c -o socketmanage.o
 
 socketsetup.o: socketsetup.h socketsetup.c
 	$(CC) -g -c socketsetup.c -o socketsetup.o

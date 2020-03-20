@@ -9,7 +9,7 @@
 #ifndef ROUTERTABLE_H
 #define ROUTERTABLE_H
 
-#include "socketmanage.h"
+#include "sman_redo.h"
 
 // Defines a router table
 typedef struct router_table
@@ -66,5 +66,16 @@ int update_rtable(RTABLE new_table);
  * None
  */ 
 void add_neighbour(char name);
+
+/*
+ * Sends router table to neighbouring routers.
+ *
+ * Input:
+ * None
+ *
+ * Output:
+ * 0 on success, -1 on failure.
+ */ 
+void send_rtable(void);
 
 #endif // ROUTERTABLE_H

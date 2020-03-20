@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "socketsetup.h"
 #include "routertable.h"
+#include "sman_redo.h"
 
 #define S_ALPH 65 // ascii code for A
 #define INF 2147483647 // value for infinity
@@ -50,7 +52,53 @@ void print_rtable(void)
 
 int update_rtable(RTABLE new_table)
 {
-    (void) new_table;
+    int i = 0;
+    int is_nbr = 0;
+    int dist_est[2]; // distance estmate for path we're calculating
+    char nxt_hop[2]; // corresponding next hop router for the distance
+                     // estimate
+                     // NOTE: since we only have max two outgoing routers
+                     //       there are at most 2 distance estimates for
+                     //       each table entry
+
+    while (rtable.names[i] != rtable.my_name) i++;
+
+    // our router is not in incoming table - do nothing
+    if (new_table.dist[i] == INF) return 0;
+
+    // calc Dx(y) for all routers y
+    for (int i  = 0; i < MAXROUTERS; i++)
+    {
+        // our router - don't change
+        if (rtable.names[i] == rtable.my_name) continue;
+
+        // our router to neighbour - don't change
+        for (int n = 0; n < NUM_NBRS; n++)
+            if (rtable.names[i] == nbrs[i].name) is_nbr = 1;
+        
+        if (is_nbr) continue;
+
+        for (int n = 0; n < NUM_NBRS; n++)
+        {
+            dist_est[n] = 1 + new_table.dist[i];
+            nxt_hop[n] = nbrs[n].name;
+        }
+
+        // get minimum estimate
+        if (dist_est[0] <= dist_est[1])
+        {
+            rtable.dist[i] = dist_est[0];
+            rtable.next_hop[i] = nxt_hop[0];
+        }
+        else
+        {
+            rtable.dist[i] = dist_est[1];
+            rtable.next_hop[i] = nxt_hop[1];
+        }
+    }
+
+
+
     return 0; 
 }
 
@@ -66,5 +114,19 @@ void add_neighbour(char name)
             rtable.next_hop[i] = name;
             break;
         }
+    }
+}
+
+void send_rtable(void)
+{
+    int rv;
+
+    for (int n = 0; n < NUM_NBRS; n++)
+    {
+        //rv = send_tcp(&rtable, neighbours[n].sockfd, sizeof(RTABLE));
+        rv = send(nbrs[n].sockfd, &rtable, sizeof(RTABLE), 0);
+        if (rv == -1)
+            fprintf(stderr, "Unable to send router table to router %c\n\n", 
+                    nbrs[n].name);
     }
 }
