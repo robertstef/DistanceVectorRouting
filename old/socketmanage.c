@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <errno.h>
 #include "list.h"
 #include "socketmanage.h"
 #include "socketsetup.h"
@@ -40,7 +41,7 @@ int sockman_init(int argc, char *argv[])
     else
         num_nbrs = 1;
     
-    neighbours = malloc(sizeof(int) * num_nbrs);
+    neighbours = malloc(sizeof(NBR_INFO) * num_nbrs);
     if (neighbours == NULL)
     {
         fprintf(stderr, "sockman_init(): malloc error\n");
@@ -94,9 +95,36 @@ POLLINFO *log_socket(int sockfd)
     return &pollinfo;
 }
 
+int connect_nbrs_helper(NBR_INFO nbr)
+{   
+    int newfd, rv;
+    struct addrinfo hints;
+
+    // setup hints
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    newfd = set_active_tcp(&hints, nbr.port, hostname);
+
+    // neighbor not available
+    if (newfd == -1)
+    {
+        fprintf(stderr, "Unable to connect with router listening "
+                "on port %s\n\n", nbr.port);
+        return -1;
+    }
+    // got connection
+    else
+        nbr.sockfd = newfd;
+
+    return 0;
+}
+
 void connect_nbrs(void)
 {
-    int newfd, rv;
+    int rv, newfd;
+    char r_name;
     struct addrinfo hints;
 
     // setup hints
@@ -107,6 +135,7 @@ void connect_nbrs(void)
     for (int i = 0; i < num_nbrs; i++)
     {
         NBR_INFO nbr = neighbours[i];
+
 
         // if sockfd is 0 automatically create connection
         if (nbr.sockfd == 0)
@@ -120,21 +149,82 @@ void connect_nbrs(void)
             // got connection
             else
             {
-                nbr.sockfd = newfd;
+                if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0)
+                    fprintf(stderr, "connect_nbrs(): fcntl error, could not "
+                            "set socket to non-blocking\n");
+
+                sleep(1);
 
                 // wait for neighbor to send us their router name
-                rv = recv_tcp(&nbr.name, nbr.sockfd, sizeof(char));
-                if (rv == -1)
-                    break;
+                rv = recv(newfd, &r_name, 1, 0);
 
-                add_neighbour(nbr.name);
-                printf("Connected to router %c\n", nbr.name);
+                if (rv == 1)
+                {
+                    rv = send(newfd, "OK", 2, 0);
+                    if (rv == -1)
+                    {
+                        printf("connect_nbrs(): send error\n");
+                        break;
+                    }
+                    else
+                    {
+                        nbr.sockfd = newfd;
+                        nbr.name = r_name;
+                        add_neighbour(nbr.name);
+                        printf("Connected to router %c\n", nbr.name);
+                    }
+
+                }
+                else
+                {
+                    printf("Didn't get router name\n");
+                    close(newfd);
+                    break;
+                }
             }
         }
         // else check conection status - reconnect if necessary
         else { 
-            // do stuff 
         }
     }
 }
 
+        /*
+        if (nbr.sockfd != 0)
+        {
+            rv = write(nbr.sockfd, "", 0);
+            if ((rv == -1) && (errno == EPIPE))
+            {
+                rv = connect_nbrs_helper(nbr);
+                if (rv ==  -1) break;
+            }
+
+        }
+        else
+        {
+            rv = connect_nbrs_helper(nbr);
+            if (rv == -1) break;
+
+            // its a new connection - get their name
+
+            // wait for neighbor to send us their router name
+            printf("Receiving nbrs router name\n");
+            rv = recv_tcp(&nbr.name, nbr.sockfd, sizeof(char));
+            if (rv == -1)
+                break;
+
+            add_neighbour(nbr.name);
+            printf("Connected to router %c\n", nbr.name);
+        }
+        */
+            /*
+            // check connection status of each neighbour
+            for (int n = 0; n < num_nbrs; n++)
+            {
+                rv = write(neighbours[n].sockfd, "", 0);
+                if ((rv == -1) && (errno == EPIPE))
+                {
+
+                }
+            }
+            */

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <poll.h>
+#include <fcntl.h>
 #include "userinput.h"
 #include "socketsetup.h"
 #include "routerfcns.h"
@@ -28,6 +29,8 @@ int main(int argc, char *argv[])
     struct sockaddr their_addr;
     socklen_t addr_len;
     POLLINFO *pollinfo;
+    RTABLE in_table;
+    char ack[2];
     int LISTENER;
 
     // verify command line input
@@ -83,8 +86,12 @@ int main(int argc, char *argv[])
         // timeout occurred
         if ( pollrv == 0 )
         {
+            printf("Connect neighbours\n");
+            connect_nbrs();
+            printf("Print rtable\n");
             print_rtable();
-            tout = 5000;
+            printf("Send rtable\n");
+            send_rtable();
         }
 
         for (int i = 0; i < pollinfo->fdcount; i++)
@@ -96,6 +103,7 @@ int main(int argc, char *argv[])
                 {
                     // accept new connection
                     addr_len = sizeof(their_addr);
+                    printf("Accpeting new connection\n");
                     newfd = accept(sockfd, &their_addr, &addr_len);
 
                     if ( newfd == -1 )
@@ -104,21 +112,53 @@ int main(int argc, char *argv[])
                         exit(EXIT_FAILURE);
                     }
 
-                    // log new connection
-                    pollinfo = log_socket(newfd);
 
+                    printf("Sending router name\n");
                     // send router name to new connection
                     rv = send_tcp(argv[1], newfd, sizeof(char));
                     if (rv == -1)
                         break;
 
-                    printf("Got connection on sockfd %d\n", newfd);
+                    if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0)
+                        fprintf(stderr, "log_socket(): fcntl error, could not set "
+                                "socket to non-blocking\n");
+                    
+                    sleep(1);
+
+                    rv = recv(newfd, ack, 2, 0);
+                    if (rv == -1)
+                    {
+                        printf("Did not receive ack\n");
+                        close(newfd);
+                        break;
+                    }
+
+                    if (strcmp(ack, "OK") == 0)
+                    {
+                        // log new connection
+                        pollinfo = log_socket(newfd);
+                        printf("Got connection on sockfd %d\n", newfd);
+                    }
+                    else
+                    {
+                        printf("Ack was incorrect\n");
+                        close(newfd);
+                    }
+                    read(LISTENER, &rv, sizeof(int));
                 }
                 // incoming router table
                 else
                 {
+                    printf("Receiving router table\n");
+                    read(pollinfo->pfds[i].fd, &in_table, sizeof(RTABLE));
+                    //rv = recv(pollinfo->pfds[i].fd, &in_table, sizeof(RTABLE), 0);
+                    //rv = recv_tcp(&in_table, pollinfo->pfds[i].fd, 
+                    //        sizeof(RTABLE));
+
+                    if (rv == -1)
+                        break;
                     printf("Updating router table\n");
-                    tout = 0;
+                    update_rtable(in_table);
                 }
             }
         }

@@ -14,7 +14,7 @@
 #include "sman_redo.h"
 
 #define S_ALPH 65 // ascii code for A
-#define INF 2147483647 // value for infinity
+#define INF 2147483600 // value for infinity
 
 RTABLE rtable; // router table for this router
 
@@ -54,13 +54,9 @@ int update_rtable(RTABLE new_table)
 {
     int i = 0;
     int is_nbr = 0;
-    int dist_est[2]; // distance estmate for path we're calculating
-    char nxt_hop[2]; // corresponding next hop router for the distance
-                     // estimate
-                     // NOTE: since we only have max two outgoing routers
-                     //       there are at most 2 distance estimates for
-                     //       each table entry
-
+    int dist_est;
+    
+    //printf("UPDATING FROM %c\n", new_table.my_name);
     while (rtable.names[i] != rtable.my_name) i++;
 
     // our router is not in incoming table - do nothing
@@ -72,32 +68,40 @@ int update_rtable(RTABLE new_table)
         // our router - don't change
         if (rtable.names[i] == rtable.my_name) continue;
 
-        // our router to neighbour - don't change
-        for (int n = 0; n < NUM_NBRS; n++)
-            if (rtable.names[i] == nbrs[i].name) is_nbr = 1;
-        
-        if (is_nbr) continue;
+        //if ((new_table.dist[i] == INF) ) continue;
 
-        for (int n = 0; n < NUM_NBRS; n++)
+        // if our table has their name
+        dist_est = 1 + new_table.dist[i];
+        if (dist_est < rtable.dist[i])
         {
-            dist_est[n] = 1 + new_table.dist[i];
-            nxt_hop[n] = nbrs[n].name;
-        }
-
-        // get minimum estimate
-        if (dist_est[0] <= dist_est[1])
-        {
-            rtable.dist[i] = dist_est[0];
-            rtable.next_hop[i] = nxt_hop[0];
-        }
-        else
-        {
-            rtable.dist[i] = dist_est[1];
-            rtable.next_hop[i] = nxt_hop[1];
+            rtable.dist[i] = dist_est;
+            rtable.next_hop[i] = new_table.my_name;
         }
     }
 
-
+    // validate next_hops
+    is_nbr = 0;
+    for (int i = 0; i < MAXROUTERS; i++)
+    {
+        if (rtable.names[i] != rtable.my_name)
+        {
+            for (int n = 0; n < NUM_NBRS; n++)
+            {
+                if (rtable.next_hop[i] == nbrs[n].name)
+                {
+                    //rtable.dist[i] = INF;
+                    //rtable.next_hop[i] = '-';
+                    is_nbr = 1;
+                }
+            }
+            if (is_nbr == 0)
+            {
+                rtable.dist[i] = INF;
+                rtable.next_hop[i] = '-';
+            }
+            is_nbr = 0;
+        }
+    }
 
     return 0; 
 }
@@ -123,10 +127,26 @@ void send_rtable(void)
 
     for (int n = 0; n < NUM_NBRS; n++)
     {
-        //rv = send_tcp(&rtable, neighbours[n].sockfd, sizeof(RTABLE));
-        rv = send(nbrs[n].sockfd, &rtable, sizeof(RTABLE), 0);
+        if (nbrs[n].sockfd == -1) continue;
+
+        rv = send(nbrs[n].sockfd, &rtable, sizeof(RTABLE), MSG_NOSIGNAL);
         if (rv == -1)
             fprintf(stderr, "Unable to send router table to router %c\n\n", 
                     nbrs[n].name);
+    }
+}
+
+void dropped_rtable(char name)
+{
+    // remove direct path and paths that have dropped
+    // router as next hop
+    for (int n = 0; n < MAXROUTERS; n++)
+    {
+        if ((rtable.names[n] == name) || (rtable.next_hop[n] == name))
+        {
+            //printf("Removing %c from table\n", name);
+            rtable.dist[n] = INF;
+            rtable.next_hop[n] = '-';
+        }
     }
 }

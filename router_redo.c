@@ -16,6 +16,7 @@
 #include "sman_redo.h"
 #include "userinput.h"
 #include "list.h"
+#include "routertable.h"
 
 #define BACKLOG 10
 
@@ -37,6 +38,9 @@ int main(int argc, char *argv[])
 
     // setup socket manager
     if ((rv = sockman_init(argc, argv)) == -1) exit(EXIT_FAILURE);
+
+    // init router table
+    init_rtable(*argv[1]);
     
     // setup passive socket
     memset(&hints, 0, sizeof(hints));
@@ -69,8 +73,9 @@ int main(int argc, char *argv[])
         }
         else if (pollrv == 0)
         {
+            print_rtable();
             connect_nbrs();
-            // timeout
+            send_rtable();
         }
         // we got something
         else if (pfd.revents & POLLIN)
@@ -86,7 +91,8 @@ int main(int argc, char *argv[])
             }
             
             // send our name
-            rv = send_tcp(argv[1], newfd, sizeof(char));
+            rv = send(newfd, argv[1], sizeof(char), MSG_NOSIGNAL);
+            //rv = send_tcp(argv[1], newfd, sizeof(char));
             if (rv == -1)
             {
                 fprintf(stderr, "Unable to send router name to "
@@ -117,12 +123,13 @@ int main(int argc, char *argv[])
             rv = log_socket(newfd);
             if (rv == -1) continue;
 
-            printf("Created new connection\n");
+            //printf("Created new connection\n");
 
             // dummy recv to clear event queue
             recv(sockfd, buf, 0, 0);
         }
-
+        // update table
+        recv_tables();
     }
     return 0;
 }

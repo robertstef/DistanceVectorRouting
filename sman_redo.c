@@ -15,6 +15,7 @@
 #include "socketsetup.h"
 #include "sman_redo.h"
 #include "list.h"
+#include "routertable.h"
 
 #define MAXARGS 5
 #define MAXBUF 100
@@ -78,6 +79,8 @@ int log_socket(int sockfd)
         return -1;
     }
     
+    *store = sockfd;
+
     // add to list
     append(connections, store);
 
@@ -86,9 +89,8 @@ int log_socket(int sockfd)
 
 void connect_nbrs(void)
 {
-    int rv, newfd, set;
+    int rv, newfd;
     struct addrinfo hints;
-    char buf[10];
 
     // setup hints
     memset(&hints, 0, sizeof(hints));
@@ -98,12 +100,20 @@ void connect_nbrs(void)
     for (int n = 0; n < NUM_NBRS; n++)
     {
         // check if we have connection to current neighbour
-        //rv = send(nbrs[n].sockfd, "", 0, 0);
-        rv = read(nbrs[n].sockfd, buf, 10);
+        rv = send(nbrs[n].sockfd, &rtable, 0, MSG_NOSIGNAL);
+        //rv = read(nbrs[n].sockfd, buf, 10);
+        //irv  = write(nbrs[n].sockfd, "test", 5);
 
         // no - create connection
-        if (errno == EBADF)
+        //if (nbrs[n].sockfd == -1)
+        if (rv < 0)
         {
+            // neighbour dropped, update our table
+            if (errno == EPIPE)
+            {
+                //printf("Lost router %c\n", nbrs[n].name);
+                dropped_rtable(nbrs[n].name);
+            }
             // create a socket
             newfd = set_active_tcp(&hints, nbrs[n].port, hostname);
 
@@ -143,8 +153,42 @@ void connect_nbrs(void)
 
             // record the socket
             nbrs[n].sockfd = newfd;
+            
+            add_neighbour(nbrs[n].name);
 
             printf("Created new connection with neighbour %c\n", nbrs[n].name);
         }
     }
+}
+
+void recv_tables(void)
+{
+    int *socket, rv;
+    RTABLE table;
+
+    if (size(connections) > 0)
+    {
+        gofirst(connections);
+        socket = getcur(connections);
+
+        while (socket != NULL)
+        {
+            rv = recv(*socket, &table, sizeof(RTABLE), 0);
+            if (rv == sizeof(RTABLE))
+                update_rtable(table);
+
+            gonext(connections);
+            socket = getcur(connections);
+        }
+    }
+}
+
+int is_connected(NBR_INFO nbr)
+{
+    int rv;
+    rv = send(nbr.sockfd, &rtable, 0, MSG_NOSIGNAL);
+
+    if (rv < 0)
+        return 0;
+    return 1;
 }

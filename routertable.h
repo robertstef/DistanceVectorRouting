@@ -78,4 +78,13 @@ void add_neighbour(char name);
  */ 
 void send_rtable(void);
 
+/*
+ * Updates the router table for
+ * a dropped connection.
+ *
+ * Input:
+ * char name: name of dropped router
+ */ 
+void dropped_rtable(char name);
+
 #endif // ROUTERTABLE_H
