@@ -1,11 +1,3 @@
-/*
- * Robert Stefanyshin
- * ras867
- * 11137532
- * CMPT434
- * A3
- */ 
-
 #ifndef SOCKMAN_H
 #define SOCKMAN_H
 

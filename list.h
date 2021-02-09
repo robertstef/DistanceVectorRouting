@@ -1,11 +1,3 @@
-/*
- * Robert Stefanyshin
- * ras867
- * 11137532
- * CMPT434
- * A2
- */ 
-
 #ifndef LIST_H
 #define LIST_H
 

@@ -1,9 +1,3 @@
-# Robert Stefanyshin
-# ras867
-# 11137532
-# CMPT434
-# A3
-
 CC = gcc -Wall -Wextra -Wpedantic
 ROUTER = userinput.o router.o socketsetup.o socketmanage.o \
 		 list.o routertable.o

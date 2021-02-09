@@ -1,11 +1,3 @@
-/*
- * Robert Stefanyshin
- * ras867
- * 11137532
- * CMPT 434
- * A3
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

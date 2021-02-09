@@ -1,9 +1,3 @@
-Robert Stefanyshin
-ras867
-11137532
-CMPT434
-A3
-
 To run the program execute the following command:
 
 router routerName myPort theirPort1 [theirPort2]

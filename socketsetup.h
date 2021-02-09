@@ -1,11 +1,3 @@
-/*
- * Robert Stefanyshin
- * ras867
- * 11137532
- * CMPT434
- * A2
- */
-
 #ifndef SOCKSETUP_H
 #define SOCKSETUP_H
 

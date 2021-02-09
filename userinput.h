@@ -1,11 +1,3 @@
-/*
- * Robert Stefanyhin
- * ras867
- * 11137532
- * CMPT434
- * A3
- */ 
-
 #ifndef USERIN_H
 #define USERIN_H
 
