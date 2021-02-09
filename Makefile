@@ -1,31 +1,45 @@
 CC = gcc -Wall -Wextra -Wpedantic
-ROUTER = userinput.o router.o socketsetup.o socketmanage.o \
-		 list.o routertable.o
+VPATH = src:test:build
+ROUTERDEP = userinput.o \
+            router.o \
+            socketsetup.o \
+            socketmanage.o \
+		    routertable.o \
+		    list.o
+
+ROUTEROBJ = build/userinput.o \
+			build/router.o \
+			build/socketsetup.o \
+			build/socketmanage.o \
+			build/routertable.o \
+			build/list.o
 
 .PHONY: all
 all: router
 
-router: $(ROUTER)
-	$(CC) -g $(ROUTER) -o router
+# Compile executables
+router: $(ROUTERDEP)
+	$(CC) -g $(ROUTEROBJ) -o bin/router
 
-router.o: router_redo.c
-	$(CC) -g -c  router_redo.c -o router.o
+# Object files for router
+router.o: src/router_redo.c
+	$(CC) -g -c  src/router_redo.c -o build/router.o
 
-routertable.o: routertable.h routertable.c
-	$(CC) -g -c routertable.c -o routertable.o
+routertable.o: src/routertable.h src/routertable.c
+	$(CC) -g -c src/routertable.c -o build/routertable.o
 
-socketmanage.o: sman_redo.h sman_redo.c list.h socketsetup.h
-	$(CC) -g -c sman_redo.c -o socketmanage.o
+socketmanage.o: src/sman_redo.h src/sman_redo.c src/list.h src/socketsetup.h
+	$(CC) -g -c src/sman_redo.c -o build/socketmanage.o
 
-socketsetup.o: socketsetup.h socketsetup.c
-	$(CC) -g -c socketsetup.c -o socketsetup.o
+socketsetup.o: src/socketsetup.h src/socketsetup.c
+	$(CC) -g -c src/socketsetup.c -o build/socketsetup.o
 
-list.o: list.c list.h
-	$(CC) -g -c list.c -o list.o
+list.o: src/list.c src/list.h
+	$(CC) -g -c src/list.c -o build/list.o
 
-userinput.o: userinput.h userinput.c
-	$(CC) -g -c userinput.c -o userinput.o
+userinput.o: src/userinput.h src/userinput.c
+	$(CC) -g -c src/userinput.c -o build/userinput.o
 
 .PHONY: clean
 clean:
-	rm -f *.o router
+	rm -f build/*.o bin/router
