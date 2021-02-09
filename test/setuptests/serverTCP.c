@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../socketsetup.h"
+#include <socketsetup.h>
 
 #define PORT "30000"
 #define BACKLOG 10

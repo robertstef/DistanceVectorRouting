@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../socketsetup.h"
+#include <socketsetup.h>
 
 #define MAXBUF 100
 
