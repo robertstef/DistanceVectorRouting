@@ -52,8 +52,8 @@ tserver: $(TSDEP)
 	$(CC) -g $(TSOBJ) -o bin/tserver
 
 # Object files for router
-router.o: src/router_redo.c
-	$(CC) -g -c  src/router_redo.c -o build/router.o
+router.o: src/router.c
+	$(CC) -g -c  src/router.c -o build/router.o
 
 routertable.o: src/routertable.h src/routertable.c
 	$(CC) -g -c src/routertable.c -o build/routertable.o
