@@ -58,8 +58,8 @@ router.o: src/router_redo.c
 routertable.o: src/routertable.h src/routertable.c
 	$(CC) -g -c src/routertable.c -o build/routertable.o
 
-socketmanage.o: src/sman_redo.h src/sman_redo.c src/list.h src/socketsetup.h
-	$(CC) -g -c src/sman_redo.c -o build/socketmanage.o
+socketmanage.o: src/socketmanage.h src/socketmanage.c src/list.h src/socketsetup.h
+	$(CC) -g -c src/socketmanage.c -o build/socketmanage.o
 
 socketsetup.o: src/socketsetup.h src/socketsetup.c
 	$(CC) -g -c src/socketsetup.c -o build/socketsetup.o

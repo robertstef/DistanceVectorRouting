@@ -15,7 +15,7 @@ to re-establish the connection. Lastly, our router table will be
 sent to all outgoing neighbouring routers.
 
 
-sman_redo.[ch]:
+socketmanage.[ch]:
 
 These files contain all necessary code to manage socket file descriptors
 for both outgoing and incoming connections. This decision was made

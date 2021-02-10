@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include "socketsetup.h"
 #include "routertable.h"
-#include "sman_redo.h"
+#include "socketmanage.h"
 
 #define S_ALPH 65 // ascii code for A
 #define INF 2147483600 // value for infinity

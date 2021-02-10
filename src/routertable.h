@@ -1,7 +1,7 @@
 #ifndef ROUTERTABLE_H
 #define ROUTERTABLE_H
 
-#include "sman_redo.h"
+#include "socketmanage.h"
 
 // Defines a router table
 typedef struct router_table
