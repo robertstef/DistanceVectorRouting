@@ -4,8 +4,7 @@
 #include <arpa/inet.h>
 #include "userinput.h"
 
-int valid_port(char *port)
-{
+int valid_port(char *port) {
     long int rv;
     char *ptr;
 
@@ -19,8 +18,7 @@ int valid_port(char *port)
     return 0;
 }
 
-int valid_name(char *name)
-{
+int valid_name(char *name) {
     char c = name[0];
 
     // Make sure we only have 1 char
@@ -34,8 +32,7 @@ int valid_name(char *name)
     return 0;
 }
 
-int checkinput(int count, char *args[])
-{
+int checkinput(int count, char *args[]) {
     int rv;
     
     // count must be: 3 < count < 6
@@ -43,15 +40,13 @@ int checkinput(int count, char *args[])
         return -1;
 
     // NAME
-    if ( (rv = valid_name(args[1])) == -1 )
-    {
+    if ( (rv = valid_name(args[1])) == -1 ) {
         fprintf(stderr, "name must be a single letter A-Z\n");
         return -1;
     }
 
     // PORT
-    for (int i = 2; i < count; i++)
-    {
+    for (int i = 2; i < count; i++) {
         if ( (rv = valid_port(args[i])) == -1 )
         {
             fprintf(stderr, "port must be an integer in range 30000-40000\n");
@@ -61,4 +56,3 @@ int checkinput(int count, char *args[])
 
     return 0;
 }
-    
