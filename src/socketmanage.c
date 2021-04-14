@@ -12,17 +12,14 @@
 #define MAXARGS 5
 #define MAXBUF 100
 
-NBR_INFO nbrs[2];
-int NUM_NBRS;
+NBR_INFO nbrs[2];      // info for our neighbours
+int NUM_NBRS;          // total number of neighbouring routers
+char hostname[MAXBUF]; // hostname of our machine
+LIST *connections;     // list of router connections
 
-char hostname[MAXBUF];
+//char hostname[MAXBUF];
 
-LIST *connections;
-
-char hostname[MAXBUF];
-
-int sockman_init(int argc, char *argv[])
-{
+int sockman_init(int argc, char *argv[]) {
     int rv;
 
     // get how many neighbours we have
@@ -31,8 +28,7 @@ int sockman_init(int argc, char *argv[])
     else
         NUM_NBRS = 1;
 
-    for (int n = 0; n < NUM_NBRS; n++)
-    {
+    for (int n = 0; n < NUM_NBRS; n++) {
         strcpy(nbrs[n].port, argv[n + 3]);
         nbrs[n].sockfd = -1;
     }
@@ -41,8 +37,7 @@ int sockman_init(int argc, char *argv[])
 
     // get hostname
     memset(hostname, 0, MAXBUF);
-    if ((rv = gethostname(hostname, MAXBUF)) == -1)
-    {
+    if ((rv = gethostname(hostname, MAXBUF)) == -1) {
         fprintf(stderr, "sockman_init(): unable to get hostname"
                 "of local machine\n");
         return -1;
@@ -51,22 +46,19 @@ int sockman_init(int argc, char *argv[])
     return 0;
 }
 
-int log_socket(int sockfd)
-{
+int log_socket(int sockfd) {
     int rv;
     int *store;
 
     // set to non-blocking
-    if ((rv = fcntl(sockfd, F_SETFL, O_NONBLOCK)) < 0)
-    {
+    if ((rv = fcntl(sockfd, F_SETFL, O_NONBLOCK)) < 0) {
         fprintf(stderr, "log_socket(): fcntl error, could not set "
                 "socket to non-blocking\n");
         return -1;
     }
     
     store = malloc(sizeof(int));
-    if (store == NULL)
-    {
+    if (store == NULL) {
         fprintf(stderr, "log_socket(): malloc error\n");
         return -1;
     }
@@ -79,8 +71,7 @@ int log_socket(int sockfd)
     return 0;
 }
 
-void connect_nbrs(void)
-{
+void connect_nbrs(void) {
     int rv, newfd;
     struct addrinfo hints;
 
@@ -89,39 +80,27 @@ void connect_nbrs(void)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    for (int n = 0; n < NUM_NBRS; n++)
-    {
+    for (int n = 0; n < NUM_NBRS; n++) {
         // check if we have connection to current neighbour
         rv = send(nbrs[n].sockfd, &rtable, 0, MSG_NOSIGNAL);
-        //rv = read(nbrs[n].sockfd, buf, 10);
-        //irv  = write(nbrs[n].sockfd, "test", 5);
 
         // no - create connection
-        //if (nbrs[n].sockfd == -1)
-        if (rv < 0)
-        {
+        if (rv < 0) {
             // neighbour dropped, update our table
-            if (errno == EPIPE)
-            {
-                //printf("Lost router %c\n", nbrs[n].name);
+            if (errno == EPIPE) {
                 dropped_rtable(nbrs[n].name);
             }
             // create a socket
             newfd = set_active_tcp(&hints, nbrs[n].port, hostname);
 
-            // set sock options for sigpipe
-            //setsockopt(newfd, SOL_SOCKET, SO_SIGNOPIPE, (void *)&set, sizeof(int));
-
-            if (newfd == -1)
-            {
+            if (newfd == -1) {
                 fprintf(stderr, "Unable to connect with router listening "
                         "on port %s\n\n", nbrs[n].port);
                 continue;
             }
 
             // set newfd to nonblocking
-            if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0)
-            {
+            if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0) {
                 fprintf(stderr, "connect_nbrs(): fcntl error, could not "
                         "set socket to non-blocking\n");
                 close(newfd);
@@ -131,8 +110,7 @@ void connect_nbrs(void)
             sleep(1);
             rv = recv(newfd, &nbrs[n].name, sizeof(char), 0);
 
-            if (rv == -1)
-            {
+            if (rv == -1) {
                 fprintf(stderr, "connect_nbrs(): did not receive neighbours"
                         " router name\n");
                 close(newfd);
@@ -145,26 +123,21 @@ void connect_nbrs(void)
 
             // record the socket
             nbrs[n].sockfd = newfd;
-            
             add_neighbour(nbrs[n].name);
-
             printf("Created new connection with neighbour %c\n", nbrs[n].name);
         }
     }
 }
 
-void recv_tables(void)
-{
+void recv_tables(void) {
     int *socket, rv;
     RTABLE table;
 
-    if (size(connections) > 0)
-    {
+    if (size(connections) > 0) {
         gofirst(connections);
         socket = getcur(connections);
 
-        while (socket != NULL)
-        {
+        while (socket != NULL) {
             rv = recv(*socket, &table, sizeof(RTABLE), 0);
             if (rv == sizeof(RTABLE))
                 update_rtable(table);
@@ -175,8 +148,7 @@ void recv_tables(void)
     }
 }
 
-int is_connected(NBR_INFO nbr)
-{
+int is_connected(NBR_INFO nbr) {
     int rv;
     rv = send(nbr.sockfd, &rtable, 0, MSG_NOSIGNAL);
 

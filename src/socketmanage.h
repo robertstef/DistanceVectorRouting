@@ -4,15 +4,15 @@
 #define MAXROUTERS 26
 #define PORTSZ 5
 
-typedef struct nbr_info
-{
-    char name;
-    int sockfd;
-    char port[PORTSZ];
+// Holds relevant info for a neighbouring router
+typedef struct nbr_info {
+    char name;         // router name
+    int sockfd;        // socket fd we are connected on
+    char port[PORTSZ]; // port we are connected on
 } NBR_INFO;
 
-extern NBR_INFO nbrs[2];
-extern int NUM_NBRS; 
+extern NBR_INFO nbrs[2]; // the neighbouring routers (max 2)
+extern int NUM_NBRS;     // current number of neighbouring routers
 
 /*
  * Initializes all necessary variables for socket
@@ -44,7 +44,7 @@ int log_socket(int sockfd);
  * Creates a connection with neighbouring sockets
  * and logs their information in a struct nbr_info.
  * Also checks to see if neighbours have been disconnected,
- * if yes, will try to restablish the connection.
+ * if yes, will try to re-establish the connection.
  *
  * Input:
  * None
