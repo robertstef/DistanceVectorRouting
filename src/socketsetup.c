@@ -3,10 +3,9 @@
 #include <unistd.h>
 #include "socketsetup.h"
 
-#define BACKLOG 10 // number of pending connection queue can hold
+#define BACKLOG 10 // number of pending connections queue can hold
 
-int set_passive_tcp(struct addrinfo *hints, char *port)
-{
+int set_passive_tcp(struct addrinfo *hints, char *port) {
     int rv;
     int sockfd;
     struct addrinfo *p, *servinfo;
@@ -19,7 +18,7 @@ int set_passive_tcp(struct addrinfo *hints, char *port)
     }
 
     // loop through all the results and bind to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next) {
+    for (p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                         p->ai_protocol)) == -1) {
             perror("set_passive_tcp(): socket");
@@ -56,8 +55,7 @@ int set_passive_tcp(struct addrinfo *hints, char *port)
     return sockfd;
 }
 
-int set_active_tcp(struct addrinfo *hints, char *port, char *name)
-{
+int set_active_tcp(struct addrinfo *hints, char *port, char *name) {
     int rv, sockfd;
     struct addrinfo *p, *servinfo;
 
@@ -90,12 +88,10 @@ int set_active_tcp(struct addrinfo *hints, char *port, char *name)
 	}
 
     freeaddrinfo(servinfo);
-
     return sockfd;
 }
 
-int set_passive_udp(struct addrinfo *hints, char *port)
-{
+int set_passive_udp(struct addrinfo *hints, char *port) {
     int rv, sockfd;
     struct addrinfo *p, *servinfo;
 
@@ -131,14 +127,12 @@ int set_passive_udp(struct addrinfo *hints, char *port)
     return sockfd;
 }
 
-SOCK_INFO *set_active_udp(struct addrinfo *hints, char *port, char *name)
-{
+SOCK_INFO *set_active_udp(struct addrinfo *hints, char *port, char *name) {
     int rv, sockfd;
     struct addrinfo *p, *servinfo;
     SOCK_INFO *result;
 
-    if ( (result = malloc(sizeof(SOCK_INFO))) == NULL )
-    {
+    if ( (result = malloc(sizeof(SOCK_INFO))) == NULL ) {
         fprintf(stderr, "set_active_udp(): malloc error\n");
         return NULL;
     }
@@ -173,14 +167,11 @@ SOCK_INFO *set_active_udp(struct addrinfo *hints, char *port, char *name)
     return result;
 }
 
-int send_tcp(void *pkt, int sockfd, int bufsize)
-{
+int send_tcp(void *pkt, int sockfd, int bufsize) {
     int rv;
 
-    while ( (rv = send(sockfd, pkt, bufsize, 0)) < bufsize )
-    {
-        if ( rv == -1 )
-        {
+    while ( (rv = send(sockfd, pkt, bufsize, 0)) < bufsize ) {
+        if ( rv == -1 ) {
             perror("send_tcp(): send");
             return -1;
         }
@@ -188,15 +179,13 @@ int send_tcp(void *pkt, int sockfd, int bufsize)
     return 0;
 }
 
-int send_udp(void *pkt, int bufsize, SOCK_INFO *info)
-{
+int send_udp(void *pkt, int bufsize, SOCK_INFO *info) {
    int rv;
 
    while ( (rv = sendto(info->sockfd, pkt, bufsize, 0, &info->addr, 
                    info->addr_len)) < bufsize )
    {
-       if ( rv == -1 )
-       {
+       if ( rv == -1 ) {
            perror("send_udp(): sendto");
            return -1;
        }
@@ -204,14 +193,11 @@ int send_udp(void *pkt, int bufsize, SOCK_INFO *info)
    return 0;
 }
 
-int recv_tcp(void *pkt, int sockfd, int bufsize)
-{
+int recv_tcp(void *pkt, int sockfd, int bufsize) {
     int rv;
 
-    while ( (rv = recv(sockfd, pkt, bufsize, 0)) < bufsize )
-    {
-        if ( rv == -1 )
-        {
+    while ( (rv = recv(sockfd, pkt, bufsize, 0)) < bufsize ) {
+        if ( rv == -1 ) {
             perror("recv_tcp(): recv");
             return -1;
         }
@@ -219,19 +205,16 @@ int recv_tcp(void *pkt, int sockfd, int bufsize)
     return 0;
 }
 
-int recv_udp(void *pkt, int bufsize, SOCK_INFO *info)
-{
+int recv_udp(void *pkt, int bufsize, SOCK_INFO *info) {
     int rv;
 
     while ( (rv = recvfrom(info->sockfd, pkt, bufsize, 0,
                     &info->addr, &info->addr_len)) < bufsize )
     {
-        if ( rv == -1 )
-        {
+        if ( rv == -1 ) {
             perror("recv_udp(): recvfrom");
             return -1;
         }
     }
     return 0;
 }
-

@@ -6,10 +6,8 @@
 #include <netdb.h>
 
 /*
- * This struct is used when creating an active UDP socket
- * to store the infomation of the machine we are sending
- * to and the socket file descriptor we are sending over.
- */ 
+ * Stores info for an active UDP socket.
+ */
 typedef struct sock_info
 {
     struct sockaddr addr; // address information
@@ -19,13 +17,7 @@ typedef struct sock_info
 } SOCK_INFO;
 
 /*
- * This file contains function deifnitions that can be used
- * to set up both a basic TCP or UDP client and server
- */
-
-/*
- * This function create a passive socket on the
- * local machine.
+ * Creates a passive socket on the local machine.
  *
  * Input:
  * struct addrinfo *hints: hints for getaddrinfo(), needs to have
@@ -39,8 +31,7 @@ typedef struct sock_info
 int set_passive_tcp(struct addrinfo *hints, char *port);
 
 /*
- * This function creates an active TCP socket on the
- * local machine.
+ * Creates an active TCP socket on the local machine.
  *
  * Input:
  * struct addrinfo *hints: hints for getaddrinfo(), needs to have all
@@ -55,12 +46,12 @@ int set_passive_tcp(struct addrinfo *hints, char *port);
 int set_active_tcp(struct addrinfo *hints, char *port, char *name);
 
 /*
- * This function creates a passive UDP socket on the local
- * machine.
+ * Creates a passive UDP socket on the local machine.
  *
  * Input:
- * struct addrinfo *hints: hints for getaddrinfo(), needs to have all fields
- *                         specified before passing into this function
+ * struct addrinfo *hints: hints for getaddrinfo(), needs to have all
+ *                         fields specified before passing into
+ *                         this function
  * char *port: port number we want to bind to
  *
  * Output:
@@ -69,12 +60,12 @@ int set_active_tcp(struct addrinfo *hints, char *port, char *name);
 int set_passive_udp(struct addrinfo *hints, char *port);
 
 /*
- * This function creates an active UDP socket on the local
- * machine.
+ * Creates an active UDP socket on the local machine.
  *
  * Input:
- * struct addrinfo *hints: hints for getaddrinfo(), need to have all fields
- *                         specified before passing into this function
+ * struct addrinfo *hints: hints for getaddrinfo(), need to have all
+ *                         fields specified before passing into
+ *                         this function
  * char *port: port the server is listening on
  * char *name: servers machine name or IP address
  *
@@ -84,7 +75,7 @@ int set_passive_udp(struct addrinfo *hints, char *port);
 SOCK_INFO *set_active_udp(struct addrinfo *hints, char *port, char *name);
 
 /*
- * This function sends a packet over a TCP connection.
+ * Sends a packet over a TCP connection.
  *
  * Input:
  * void *pkt: packet to be sent
@@ -97,7 +88,7 @@ SOCK_INFO *set_active_udp(struct addrinfo *hints, char *port, char *name);
 int send_tcp(void *pkt, int sockfd, int bufsize);
 
 /*
- * This function send a packet over a UDP connection.
+ * Sends a packet over a UDP connection.
  *
  * Input:
  * void *pkt: packet to be sent
@@ -111,7 +102,7 @@ int send_tcp(void *pkt, int sockfd, int bufsize);
 int send_udp(void *pkt, int sockfd, SOCK_INFO *info);
 
 /*
- * This function receives a packet over a TCP connection.
+ * Receives a packet over a TCP connection.
  *
  * Input:
  * void *pkt: buffer to hold received packet
@@ -124,7 +115,7 @@ int send_udp(void *pkt, int sockfd, SOCK_INFO *info);
 int recv_tcp(void *pkt, int sockfd, int bufsize);
 
 /*
- * This function receives a packet over a UDP connection.
+ * Receives a packet over a UDP connection.
  *
  * Input:
  * void *pkt: buffer to hold received packet
