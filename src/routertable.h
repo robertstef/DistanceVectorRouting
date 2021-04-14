@@ -4,16 +4,15 @@
 #include "socketmanage.h"
 
 // Defines a router table
-typedef struct router_table
-{
-    char my_name; // name of the router associated with this table
-    int dist[MAXROUTERS]; // Dx(y) for the network
+typedef struct router_table {
+    char my_name;              // name of the router associated with this table
+    int dist[MAXROUTERS];      // Dx(y) for the network
     char next_hop[MAXROUTERS]; // next_hopx(y) for the network
-    char names[MAXROUTERS]; // names of each router
+    char names[MAXROUTERS];    // names of each router
 } RTABLE;
 
-// so socket manager can have access
-// to router table for sending
+// lets socket manager have access
+// to router table for sending packets
 extern RTABLE rtable;
 
 /*
@@ -33,8 +32,8 @@ int init_rtable(char n);
 void print_rtable(void);
 
 /*
- * Updates the router using the inputted router table
- * we just received from an incoming router.
+ * Updates the router using the router table
+ * we received from an incoming router.
  *
  * Input:
  * RTABLE new_table: router table from a neighbouring router
