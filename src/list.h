@@ -67,21 +67,33 @@ void *getcur(LIST *);
 
 /*
  * Points current node to head of list
- */ 
+ *
+ * Input:
+ * LIST *: pointer to a LIST
+ */
 void gofirst(LIST *);
 
 /*
  * Points current node to next item in list
- */ 
+ *
+ * Input:
+ * LIST *: pointer to a LIST
+ */
 void gonext(LIST *);
 
 /*
  * Points current node to tail of list
+ *
+ * Input:
+ * LIST *: pointer to a LIST
  */
 void golast(LIST *);
 
 /*
  * Returns the size of the list
+ *
+ * Input:
+ * LIST *: pointer to a LIST
  */
 int size(LIST *);
 
