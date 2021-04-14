@@ -12,8 +12,7 @@
 
 #define BACKLOG 10
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int rv, sockfd, newfd, pollrv;
     struct pollfd pfd;
     char *buf[10];
@@ -22,8 +21,7 @@ int main(int argc, char *argv[])
     struct addrinfo hints;
 
     // verify command line input
-    if ( (rv = checkinput(argc, argv)) == -1)
-    {
+    if ( (rv = checkinput(argc, argv)) == -1) {
         fprintf(stderr, "Usage: router name myport theirport1 [theirport2]\n");
         exit(EXIT_FAILURE);
     }
@@ -48,45 +46,37 @@ int main(int argc, char *argv[])
     pfd.events = POLLIN;
 
     // listen for incoming connections
-    if (listen(sockfd, BACKLOG) == -1)
-    {
+    if (listen(sockfd, BACKLOG) == -1) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
-    while (1)
-    {
+    while (1) {
         pollrv = poll(&pfd, 1, 2000);
 
-        if (pollrv == -1)
-        {
+        if (pollrv == -1) {
             fprintf(stderr, "poll(): poll failed - exiting program\n");
             exit(EXIT_FAILURE);
         }
-        else if (pollrv == 0)
-        {
+        else if (pollrv == 0) {
             print_rtable();
             connect_nbrs();
             send_rtable();
         }
-        // we got something
-        else if (pfd.revents & POLLIN)
-        {
+        // we got a connection request
+        else if (pfd.revents & POLLIN) {
             // accept new connection
             addr_len = sizeof(their_addr);
             newfd = accept(sockfd, &their_addr, &addr_len);
 
-            if (newfd == -1)
-            {
+            if (newfd == -1) {
                 perror("accept");
                 exit(EXIT_FAILURE);
             }
             
             // send our name
             rv = send(newfd, argv[1], sizeof(char), MSG_NOSIGNAL);
-            //rv = send_tcp(argv[1], newfd, sizeof(char));
-            if (rv == -1)
-            {
+            if (rv == -1) {
                 fprintf(stderr, "Unable to send router name to "
                         "connecting router\n");
                 close(newfd);
@@ -94,19 +84,16 @@ int main(int argc, char *argv[])
             }
 
             // set newfd to nonblocking
-            if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0)
-            {
+            if ((rv = fcntl(newfd, F_SETFL, O_NONBLOCK)) < 0) {
                 fprintf(stderr, "main(): fcntl error, could not "
                         "set socket to non-blocking\n");
                 close(newfd);
             }
 
-            // get response
-            sleep(2);
+            // get response from neighbour
+            sleep(2); // give them a chance to process the connection
             rv = recv(newfd, buf, 10, 0);
-            //rv = recv_tcp(buf,  newfd, 10);
-            if (rv == -1)
-            {
+            if (rv == -1) {
                 fprintf(stderr, "Did not receive ack\n");
                 close(newfd);
                 continue;
@@ -114,8 +101,6 @@ int main(int argc, char *argv[])
 
             rv = log_socket(newfd);
             if (rv == -1) continue;
-
-            //printf("Created new connection\n");
 
             // dummy recv to clear event queue
             recv(sockfd, buf, 0, 0);
