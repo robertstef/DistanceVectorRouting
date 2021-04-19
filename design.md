@@ -1,27 +1,24 @@
-router_redo.c:
+`router.c`
 
 This source file contains the main code to run the router. This file
 calls all initialization functions and sets up all necessary parameters.
 The code in this file polls the passive socket for new connections.
-When a new connection is requested, the connections is accepted and the
-name of the router is send to the neighbour and an ack is awaited.
+When a new connection is requested, the connection is accepted, the
+name of the router is send to the neighbour, and an ack is awaited.
 Once the connection has been acknowledged, the new receiving socket
 is added to the list of other receiving sockets.
 
 On a timeout from poll, occurring every 2 seconds, the router table
-will be printed the stout, connections to neighbouring routers will
-be checked. If neighbouring routers have disconnected, we will try
-to re-establish the connection. Lastly, our router table will be
-sent to all outgoing neighbouring routers.
+will be printed the stout and connections to neighbouring routers will
+be checked. If neighbouring routers have disconnected, the program will
+attempt to re-establish the lost connection. Lastly, our router table 
+will be sent to all outgoing neighbouring routers.
 
-
-socketmanage.[ch]:
+\
+`socketmanage.[ch]`
 
 These files contain all necessary code to manage socket file descriptors
-for both outgoing and incoming connections. This decision was made
-in an attempt to store and manage sockets all in single file, with the
-acception of router.c accepting incoming connections. The file defines
-a struct to store info for our outgoing neighbour connections.
+for both outgoing and incoming connections. 
 
 This file performs 3 primary functions, first is to log incoming connections.
 Each socket will be set to non blocking so the program can run asynchronously.
@@ -41,8 +38,8 @@ The function iterates over the linked list of incoming sockets and checks
 for a router table, if one is there, we update our local router table
 accordingly.
 
-
-routertable.[ch]:
+\
+`routertable.[ch]`
 
 These files contain all necessary code to manage and update the router table.
 
@@ -60,7 +57,7 @@ Lastly we check all the next hops in our table. If the next hop we upated
 to a router than is not our neighbour in the previous step, we discard
 that change because it means we do not have a path to that router.
 
-Additinally, this file contains auxillary functions that add outgoing
+Additionally, this file contains auxillary functions that add outgoing
 neighbouring routers to our table and that send our table to all neighbouring
 routers.
 
