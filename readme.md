@@ -33,4 +33,3 @@ To run multiple routers, run this program from multiple terminals, configuring t
    This means the neighbouring router did not successfully send us their router name and thus their entry will 
    not be stored in our router table.
    
-
