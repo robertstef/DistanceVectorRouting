@@ -2,15 +2,15 @@
 
 This project is an implementation of a distance vector routing protocol.
 Running the program will execute a simulation of the protocol.
-The simulation can run a total of 26 routers, named A through Z where each router
+The simulation can run a total of 26 routers, named A through Z, where each router
 can have a maximum of two neighbouring routers. Every two seconds the simulation will
-print the router table for the local router displaying the distance to each known
-router in the network and the name of the next hop required to reach the router for
-that entry of the router table.
+print the router table for the local router which displays the distance to each known
+router in the network and the name of the next hop router for
+each table entry.
 
 **<ins>Execution Instructions</ins>**
 
-To run the program execute the following command:
+To run the program execute the following command from the `bin` directory:
 
 `router routerName myPort theirPort1 [theirPort2]`
 
