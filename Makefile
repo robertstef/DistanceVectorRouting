@@ -3,6 +3,7 @@ VPATH = src:test:build
 LTEST = test/ltests
 STEST = test/setuptests
 
+# Variables for dependencies, linking, and builds
 ROUTERDEP = userinput.o \
             router.o \
             socketsetup.o \
@@ -15,19 +16,31 @@ ROUTEROBJ = build/userinput.o \
 			build/socketmanage.o \
 			build/routertable.o \
 			build/list.o
+LTESTDEP = list.o \
+           ltests.o
+LTESTOBJ = build/list.o \
+           build/ltests.o
+UCDEP = socketsetup.o \
+        uclient.o
+UCOBJ = build/socketsetup.o \
+        build/uclient.o
+USDEP = socketsetup.o \
+        userver.o
+USOBJ = build/socketsetup.o \
+        build/userver.o
+TCDEP = socketsetup.o \
+        tclient.o
+TCOBJ = build/socketsetup.o \
+        build/tclient.o
+TSDEP = socketsetup.o \
+        tserver.o
+TSOBJ = build/socketsetup.o \
+        build/tserver.o
 
-LTESTDEP = list.o ltests.o
-LTESTOBJ = build/list.o build/ltests.o
 
-UCDEP = socketsetup.o uclient.o
-UCOBJ = build/socketsetup.o build/uclient.o
-USDEP = socketsetup.o userver.o
-USOBJ = build/socketsetup.o build/userver.o
-
-TCDEP = socketsetup.o tclient.o
-TCOBJ = build/socketsetup.o build/tclient.o
-TSDEP = socketsetup.o tserver.o
-TSOBJ = build/socketsetup.o build/tserver.o
+# setup bin and build directories
+$(shell mkdir -p bin)
+$(shell mkdir -p build)
 
 .PHONY: all
 all: router ltests uclient userver tclient tserver
